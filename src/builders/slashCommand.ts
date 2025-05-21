@@ -14,7 +14,7 @@ export type SlashCommandExecution = (
     i: ChatInputCommandInteraction,
     ctx: InteractionContext,
 ) => unknown | Promise<unknown>;
-const defaultSlashCommandExecute: SlashCommandExecution = async (i, _ctx) => {
+export const defaultSlashCommandExecute: SlashCommandExecution = async (i, _ctx) => {
     await i.reply({
         content: 'This slash command has not been implemented yet.',
         ephemeral: true,
@@ -62,12 +62,8 @@ export class SlashCommand extends SlashCommandBuilder {
             const serverId = inter.guildId;
             if (!serverId) throw new InteractionError("You must be in a server to use this command.")
 
-            console.log(this.featureFlags);
-
             const permitted = await matchServerFeatureFlags(serverId, this.featureFlags);
             if (!permitted) throw new InteractionError("You do not have these features enabled on your server");
-
-            console.log(permitted);
 
             await this.executeFunc(inter, ctx);
         } catch (err) {

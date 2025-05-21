@@ -7,6 +7,7 @@ import { SubCommand } from './subcommand';
 import { InteractionError } from '../utils/errors';
 import { ServerFlag } from '../database/servers';
 import { matchServerFeatureFlags } from '../utils/featureFlags';
+import { InteractionContext } from '../app/discord/context';
 
 export class SubCommandHandler extends SlashCommandBuilder {
     public static subcommandHandlers = new Map<string, SubCommandHandler>();
@@ -35,7 +36,7 @@ export class SubCommandHandler extends SlashCommandBuilder {
         return this.subcommands;
     }
 
-    public async run(inter: ChatInputCommandInteraction) {
+    public async run(inter: ChatInputCommandInteraction, ctx: InteractionContext) {
         const subcommandHandle = inter.options.getSubcommand();
         if (!subcommandHandle)
             throw new InteractionError('No subcommand provided');
@@ -50,7 +51,7 @@ export class SubCommandHandler extends SlashCommandBuilder {
         const permitted = await matchServerFeatureFlags(serverId, this.featureFlags);
         if (!permitted) throw new InteractionError(`Feature cannot be used as you are missing at least one of the following permissions: ${this.featureFlags.join(", ").toUpperCase()}`);
 
-        await subcommand.run(inter);
+        await subcommand.run(inter, ctx);
     }
 
     public async onAutocomplete(inter: AutocompleteInteraction) {

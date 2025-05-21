@@ -1,6 +1,8 @@
 import type { ChatInputCommandInteraction, Interaction } from 'discord.js';
 import { SlashCommand } from '../../builders/slashCommand';
 import { db } from '../../app/database/database';
+import { SubCommandHandler } from '../../builders/subcommandHandler';
+import { InteractionContext } from '../../app/discord/context';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function onInteraction(i: Interaction<any>) {
@@ -17,14 +19,19 @@ export default async function onInteraction(i: Interaction<any>) {
 
 async function handleSlashCommand(i: ChatInputCommandInteraction) {
     const slashCommand = SlashCommand.slashCommands.get(i.commandName);
-    if (!slashCommand) {
-        return i.reply({
-            content: 'This command does not exist',
-            ephemeral: true,
-        });
-    }
+    const ctx: InteractionContext = { db };
 
-    return await slashCommand.run(i, {
-        db: db
-    });
+    if (!slashCommand) {
+        const subcommandHandler = SubCommandHandler.subcommandHandlers.get(
+            i.commandName
+        );
+        if (!subcommandHandler)
+            return i.reply({
+                content: 'This command does not exist',
+                ephemeral: true,
+            });
+
+        return await subcommandHandler.run(i, ctx);
+    }
+    return await slashCommand.run(i, ctx);
 }
