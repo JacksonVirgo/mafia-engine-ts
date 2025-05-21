@@ -3,6 +3,8 @@ import config from '../../config';
 import { users } from '../../database/users';
 import { serverFlags, servers } from '../../database/servers';
 import { Pool } from 'pg';
+import { signupEvents, signups, signupUsergroups } from '../../database/signups';
+import { usergroupEvents, usergroups } from '../../database/usergroups';
 
 const pool = new Pool({
     connectionString: config.DATABASE_URL,
@@ -11,9 +13,16 @@ const pool = new Pool({
 export const db = drizzle({
     client: pool,
     schema: {
-        users: users,
-        servers: servers,
+        users,
+        servers,
         serverFeatureFlags: serverFlags,
+
+        signups: signups,
+        signupUsergroups,
+        signupEvents,
+
+        usergroups,
+        usergroupEvents
     },
 });
 
