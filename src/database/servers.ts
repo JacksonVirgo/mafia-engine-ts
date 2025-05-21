@@ -1,4 +1,4 @@
-import { pgEnum, pgTable } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, primaryKey } from 'drizzle-orm/pg-core';
 import { snowflake } from './types/snowflake';
 
 export const servers = pgTable('servers', {
@@ -16,4 +16,8 @@ export type ServerFlag = typeof serverFeatureFlag.enumValues[number];
 export const serverFlags = pgTable('server_feature_flags', {
     id: snowflake('id').notNull(),
     featureFlag: serverFeatureFlag('flag').notNull(),
-});
+}, (t) => [
+    primaryKey({
+        columns: [t.id, t.featureFlag]
+    })
+]);
