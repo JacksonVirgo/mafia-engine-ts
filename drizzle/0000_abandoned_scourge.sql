@@ -1,7 +1,7 @@
 CREATE TYPE "public"."SERVER_FEATURE_FLAG" AS ENUM('All', 'Signup');--> statement-breakpoint
 CREATE TABLE "server_feature_flags" (
-	"id" varchar(32),
-	"flag" "SERVER_FEATURE_FLAG"
+	"id" varchar(32) NOT NULL,
+	"flag" "SERVER_FEATURE_FLAG" NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "servers" (

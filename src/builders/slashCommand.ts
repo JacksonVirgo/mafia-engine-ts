@@ -1,63 +1,78 @@
 import {
-	AutocompleteInteraction,
-	ChatInputCommandInteraction,
-	MessageFlags,
-	SlashCommandBuilder,
+    AutocompleteInteraction,
+    ChatInputCommandInteraction,
+    MessageFlags,
+    SlashCommandBuilder,
 } from 'discord.js';
 import { InteractionContext } from '../app/discord/context';
-import { handleInteractionError } from '../utils/errors';
+import { handleInteractionError, InteractionError } from '../utils/errors';
+import { ServerFlag, serverFlags } from '../database/servers';
+import { db } from '../app/database/database';
+import { matchServerFeatureFlags } from '../utils/featureFlags';
 
 export type SlashCommandExecution = (
-	i: ChatInputCommandInteraction,
-	ctx: InteractionContext,
+    i: ChatInputCommandInteraction,
+    ctx: InteractionContext,
 ) => unknown | Promise<unknown>;
 const defaultSlashCommandExecute: SlashCommandExecution = async (i, _ctx) => {
-	await i.reply({
-		content: 'This slash command has not been implemented yet.',
-		ephemeral: true,
-	});
+    await i.reply({
+        content: 'This slash command has not been implemented yet.',
+        ephemeral: true,
+    });
 };
 
 export type SlashCommandAutocomplete = (
-	i: AutocompleteInteraction,
+    i: AutocompleteInteraction,
 ) => unknown | Promise<unknown>;
 
 export class SlashCommand extends SlashCommandBuilder {
-	public static slashCommands = new Map<string, SlashCommand>();
-	private featureFlags: string[] = [];
-	private executeFunc: SlashCommandExecution = defaultSlashCommandExecute;
-	private autocompleteFunction?: SlashCommandAutocomplete;
+    public static slashCommands = new Map<string, SlashCommand>();
+    private featureFlags: ServerFlag[] = [];
+    private executeFunc: SlashCommandExecution = defaultSlashCommandExecute;
+    private autocompleteFunction?: SlashCommandAutocomplete;
 
-	constructor(name: string) {
-		super();
-		this.setName(name);
+    constructor(name: string) {
+        super();
+        this.setName(name);
 
-		SlashCommand.slashCommands.set(name, this);
-	}
+        SlashCommand.slashCommands.set(name, this);
+    }
 
-	public setFeatureFlags(...featureFlags: string[]) {
-		this.featureFlags = featureFlags;
-		return this;
-	}
+    public setFeatureFlags(...featureFlags: ServerFlag[]) {
+        this.featureFlags = featureFlags;
+        return this;
+    }
 
-	public onExecute(executeFunc: SlashCommandExecution) {
-		this.executeFunc = executeFunc;
-		return this;
-	}
+    public onExecute(executeFunc: SlashCommandExecution) {
+        this.executeFunc = executeFunc;
+        return this;
+    }
 
-	public onAutocomplete(autocompleteFunction: SlashCommandAutocomplete) {
-		this.autocompleteFunction = autocompleteFunction;
-		return this;
-	}
+    public onAutocomplete(autocompleteFunction: SlashCommandAutocomplete) {
+        this.autocompleteFunction = autocompleteFunction;
+        return this;
+    }
 
-	public async run(
-		inter: ChatInputCommandInteraction,
-		ctx: InteractionContext,
-	) {
-		try {
-			await this.executeFunc(inter, ctx);
-		} catch (err) {
-			await handleInteractionError(err, inter);
-		}
-	}
+    public async run(
+        inter: ChatInputCommandInteraction,
+        ctx: InteractionContext,
+    ) {
+        try {
+
+            const serverId = inter.guildId;
+            if (!serverId) throw new InteractionError("You must be in a server to use this command.")
+
+            console.log(this.featureFlags);
+
+            const permitted = await matchServerFeatureFlags(serverId, this.featureFlags);
+            if (!permitted) throw new InteractionError("You do not have these features enabled on your server");
+
+            console.log(permitted);
+
+            await this.executeFunc(inter, ctx);
+        } catch (err) {
+            console.log(err);
+            await handleInteractionError(err, inter);
+        }
+    }
 }

@@ -120,7 +120,6 @@ export function getErrorEmbedTitle() {
 export class InteractionError extends Error {
     public readonly errorCode: ErrorCode = ErrorCode.Unknown;
     constructor(message: string | ErrorCode | StatusMessage) {
-        super();
         if (typeof message === 'string') {
             super(
                 isErrorCode(message) ? defaultStatusMessages[message] : message,
@@ -169,6 +168,6 @@ export async function handleInteractionError(
         });
     return await i.reply({
         embeds: [embed],
-        ephemeral: true,
+        flags: ['Ephemeral']
     });
 }

@@ -1,5 +1,5 @@
 {
-  "id": "122ef3aa-0ea7-473b-ace7-5a3268fb22ad",
+  "id": "44cefc96-aea3-4f5f-a038-624471ea29df",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -12,14 +12,14 @@
           "name": "id",
           "type": "varchar(32)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "flag": {
           "name": "flag",
           "type": "SERVER_FEATURE_FLAG",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         }
       },
       "indexes": {},
