@@ -7,9 +7,14 @@ import {
     varchar,
 } from 'drizzle-orm/pg-core';
 import { usergroups } from './usergroups';
+import { snowflake } from './types/snowflake';
+import { servers } from './servers';
 
 export const signups = pgTable('signups', {
     id: serial('id').primaryKey(),
+    server_id: snowflake('server_id').notNull().references(() => servers.id),
+    channel_id: snowflake('channel_id').notNull(),
+    message_id: snowflake('message_id').notNull()
 });
 
 
